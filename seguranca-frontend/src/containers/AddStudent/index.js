@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import { Form, Buttons, FlexBox, Title } from './styled'
 import Api from '../../services/Api'
 
-const AddStudent = () => {
+const AddStudent = ({ getKeyAndEncrypt }) => {
 
     let history = useHistory()
 
@@ -25,14 +25,16 @@ const AddStudent = () => {
             email: email,
             phone: phone
         }
-        Api.addStudent(obj).then( res => {
-            history.push('/students/list')
-        })
+        getKeyAndEncrypt(obj)
+        .then((data) => {
+            Api.addStudent(data).then( res => {
+                history.push('/students/list')
+            })
+        });
     }
 
     return (
         <FlexBox>
-            
             <Form noValidate autoComplete="off">
                 <Title>Adicionar Estudante</Title>
                 <TextField margin="normal" onChange={(ev) => setName(ev.target.value)} required className="mg-10" id="name" label="Nome" variant="outlined"/>

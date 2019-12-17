@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import { Form, Buttons, FlexBox, Title } from './styled'
 import Api from '../../services/Api'
 
-const UpdateStudent = ({ student }) => {
+const UpdateStudent = ({ student, getKeyAndEncrypt }) => {
     let history = useHistory()
 
     const returnMenu = () => {
@@ -25,9 +25,12 @@ const UpdateStudent = ({ student }) => {
             email: newEmail,
             phone: newPhone
         }
-        Api.updateStudent(obj).then( res => {
-            history.push('/students/list')
-        })
+        getKeyAndEncrypt(obj)
+        .then((data) => {
+            Api.updateStudent(data).then( res => {
+                history.push('/students/list')
+            })
+        });
     }
 
     return (

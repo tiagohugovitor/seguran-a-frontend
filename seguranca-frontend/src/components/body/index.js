@@ -6,7 +6,7 @@ import ListStudents from '../../containers/ListStudents'
 import UpdateStudents from '../../containers/UpdateStudent'
 import { CenterContainer } from './styled'
 
-const BodyApp = () => {
+const BodyApp = ({ decrypt, getKey, getKeyAndEncrypt }) => {
 
     return (
         <CenterContainer>
@@ -20,19 +20,19 @@ const BodyApp = () => {
             <Switch>
               <Route 
                 path="/students/add"
-                component = {() => <AddStudent />}
+                component = {() => <AddStudent getKeyAndEncrypt={getKeyAndEncrypt} />}
               />
             </Switch>
             <Switch>
               <Route 
                 path="/students/list"
-                component = {() => <ListStudents />}
+                component = {() => <ListStudents decrypt={decrypt} getKey={getKey} />}
               />
             </Switch>
             <Switch>
               <Route 
                 path="/students/update"
-                component = {() => <UpdateStudents />}
+                component = {() => <UpdateStudents  getKeyAndEncrypt={getKeyAndEncrypt} />}
               />
             </Switch>
         </CenterContainer>

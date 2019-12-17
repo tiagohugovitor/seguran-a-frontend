@@ -11,9 +11,10 @@ import TableRow from '@material-ui/core/TableRow'
 import Paper from '@material-ui/core/Paper'
 import UpdateStudent from '../UpdateStudent'
 import { Content, Title, FlexBox } from './styled'
+import { aesDecryptTest } from '../../services/cryptography'
 import Api from '../../services/Api'
 
-const ListStudents = () => {
+const ListStudents = ({ getKey, decrypt }) => {
     let history = useHistory()
 
     const [indexUpdateStudent, setIndexUpdateStudent] = useState(0)
@@ -22,8 +23,12 @@ const ListStudents = () => {
     const [students, setStudents] = useState(() => [])
 
     const getStudents = () => {
-        Api.getStudents().then( res => {
-            setStudents(res.data)
+        getKey()
+        .then(({ rsaEncryptedAesKey, iv}) => {   
+            Api.getStudents(rsaEncryptedAesKey, iv).then( res => {
+                const result = decrypt(res)
+                setStudents(result)
+            })
         })
     }
 

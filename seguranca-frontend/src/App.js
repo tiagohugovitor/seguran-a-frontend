@@ -37,11 +37,10 @@ export class App extends Component {
           });
           console.log("AESKEY" + aesKey);
           this.setState({aesKey: aesKey, rsaPublicKey: publicKey, iv: iv});
-
+          console.log(aesKey);
           let rsaEncrypt = new JSEncrypt();
           rsaEncrypt.setPublicKey(this.state.rsaPublicKey);
           let rsaEncryptedAesKey = rsaEncrypt.encrypt(aesKey.toString());
-
           const encrypted = crypt.encrypt(publicKey, aesKey)
 
           console.log("AesKey Encrypted with public key" + rsaEncryptedAesKey)
@@ -81,15 +80,18 @@ export class App extends Component {
     });
   }
 
-  decrypt = (data) => {
-    let aesOptions = { mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7, iv: this.state.iv};
-    let aesDecTrans = CryptoJS.AES.decrypt(JSON.stringify(data), this.state.aesKey, aesOptions);
-    return JSON.parse(aesDecTrans);
+  decrypt = (data,iv) => {
+      console.log("SJAJDJSADS          "+data);
+      console.log("AAAAAAAAAA          "+this.state.aesKey);
+      console.log("BBBBBBBBBB          "+this.state.iv);
+      let aesDecTrans = CryptoJS.AES.decrypt(data, this.state.aesKey,{iv: "6162636465666768696a6b6c6d6e6f7",mode: CryptoJS.mode.CBC,padding: CryptoJS.pad.Pkcs7});
+      console.log("YYYYYYYYYYYY  "+aesDecTrans);
+      return JSON.parse(aesDecTrans.toString(CryptoJS.enc.Utf8));
   }
 
   encrypt = (data) => {
     let aesOptions = { mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7, iv: this.state.iv};
-    let aesEncTrans = CryptoJS.AES.encrypt(JSON.stringify(data), this.state.aesKey, aesOptions);
+    let aesEncTrans = CryptoJS.AES.encrypt(JSON.stringify(data), this.state.aesKey, this.state.iv);
 
     let rsaEncrypt = new JSEncrypt();
     rsaEncrypt.setPublicKey(this.state.rsaPublicKey);

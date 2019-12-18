@@ -11,10 +11,9 @@ import TableRow from '@material-ui/core/TableRow'
 import Paper from '@material-ui/core/Paper'
 import UpdateStudent from '../UpdateStudent'
 import { Content, Title, FlexBox } from './styled'
-import { aesDecryptTest } from '../../services/cryptography'
 import Api from '../../services/Api'
 
-const ListStudents = ({ getKey, decrypt }) => {
+const ListStudents = () => {
     let history = useHistory()
 
     const [indexUpdateStudent, setIndexUpdateStudent] = useState(0)
@@ -23,12 +22,8 @@ const ListStudents = ({ getKey, decrypt }) => {
     const [students, setStudents] = useState(() => [])
 
     const getStudents = () => {
-        getKey()
-        .then(({ rsaEncryptedAesKey, iv}) => {   
-            Api.getStudents(rsaEncryptedAesKey, iv).then( res => {
-                const result = decrypt(res)
-                setStudents(result)
-            })
+        Api.getStudents().then( res => {
+            setStudents(res.data)
         })
     }
 
@@ -44,11 +39,11 @@ const ListStudents = ({ getKey, decrypt }) => {
     const useStyles = makeStyles({
         table: {
             minWidth: 650,
-        },  
+        },
     });
 
     const classes = useStyles()
- 
+
     const renderListStudent = () => {
         if(!students.length) {
             getStudents()
@@ -58,28 +53,28 @@ const ListStudents = ({ getKey, decrypt }) => {
                 <Content>
                     <Title> Estudantes </Title>
                     <TableContainer component={Paper}>
-                    <Table className={classes.table} aria-label="simple table">
-                        <TableHead>
-                        <TableRow>
-                            <TableCell>Nome</TableCell>
-                            <TableCell align="right">Matricula</TableCell>
-                            <TableCell align="right">Telefone</TableCell>
-                            <TableCell align="right">Email</TableCell>
-                        </TableRow>
-                        </TableHead>
-                        <TableBody>
-                        {students.map((student, index) => (
-                            <TableRow style={{cursor: 'pointer'}} onClick={() => goToUpdateStudent(index)} key={student.name}>
-                            <TableCell component="th" scope="row">
-                                {student.name}
-                            </TableCell>
-                            <TableCell align="right">{student.student_registration}</TableCell>
-                            <TableCell align="right">{student.phone}</TableCell>
-                            <TableCell align="right">{student.email}</TableCell>
-                            </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
+                        <Table className={classes.table} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Nome</TableCell>
+                                    <TableCell align="right">Matricula</TableCell>
+                                    <TableCell align="right">Telefone</TableCell>
+                                    <TableCell align="right">Email</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {students.map((student, index) => (
+                                    <TableRow style={{cursor: 'pointer'}} onClick={() => goToUpdateStudent(index)} key={student.name}>
+                                        <TableCell component="th" scope="row">
+                                            {student.name}
+                                        </TableCell>
+                                        <TableCell align="right">{student.student_registration}</TableCell>
+                                        <TableCell align="right">{student.phone}</TableCell>
+                                        <TableCell align="right">{student.email}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </TableContainer>
                     <Button onClick={() => returnMenu()}>
                         Voltar
@@ -96,3 +91,4 @@ const ListStudents = ({ getKey, decrypt }) => {
 }
 
 export default ListStudents
+

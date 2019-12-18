@@ -3,18 +3,26 @@ import { BrowserRouter as Router } from "react-router-dom"
 import BodyApp from './components/body';
 import { Crypt, RSA } from 'hybrid-crypto-js'; 
 import CryptoJS from 'crypto-js';
+import aes from 'crypto-js/aes';
 import JSEncrypt from 'jsencrypt';
 import Api from '../src/services/Api';
 
 export class App extends Component {
   constructor() {
     super();
+      let iv = CryptoJS.enc.Utf8.parse('abcdefghijklmnop');
+      let secretPhrase = CryptoJS.lib.WordArray.random(16);
+      let salt = CryptoJS.lib.WordArray.random(128 / 8);
+
+      let aesKey = CryptoJS.PBKDF2(secretPhrase.toString(), salt, {
+          keySize: 128 / 32
+      });
     this.state = {
       rsaServerPublicKey: null,
       rsaPublicKey: null,
       rsaPrivateKey: null,
-      aesKey: null,
-      iv: null
+      aesKey: aesKey,
+      iv: iv
     };
     this.getKeyAndEncrypt = this.getKeyAndEncrypt.bind(this);
     this.getKey = this.getKey.bind(this);
@@ -23,33 +31,36 @@ export class App extends Component {
   getKey = () => {
     const crypt = new Crypt();
     return new Promise((resolve, reject) => {
-      Api.getPublicKey()
-        .then((res) => {
-          const publicKey = res.data;
-          console.log("Received rsa public key " + publicKey);
-  
-          let iv = CryptoJS.enc.Utf8.parse('abcdefghijklmnop');
-          let secretPhrase = CryptoJS.lib.WordArray.random(16);
-          let salt = CryptoJS.lib.WordArray.random(128 / 8);
-  
-          let aesKey = CryptoJS.PBKDF2(secretPhrase.toString(), salt, {
-            keySize: 128 / 32
-          });
-          console.log("AESKEY" + aesKey);
-          this.setState({aesKey: aesKey, rsaPublicKey: publicKey, iv: iv});
-          console.log(aesKey);
-          let rsaEncrypt = new JSEncrypt();
-          rsaEncrypt.setPublicKey(this.state.rsaPublicKey);
-          let rsaEncryptedAesKey = rsaEncrypt.encrypt(aesKey.toString());
-          const encrypted = crypt.encrypt(publicKey, aesKey)
+        if(!!this.state.aesKey && !!this.state.rsaServerPublicKey){
 
-          console.log("AesKey Encrypted with public key" + rsaEncryptedAesKey)
-          resolve({ rsaEncryptedAesKey, iv, encrypted });
-        })
-        .catch((error) => {
-          console.log(error);
-          reject(error);
-        });
+            let rsaEncrypt = new JSEncrypt();
+            rsaEncrypt.setPublicKey(this.state.rsaPublicKey);
+            let rsaEncryptedAesKey = rsaEncrypt.encrypt(this.state.aesKey.toString());
+            const encrypted = crypt.encrypt(this.state.rsaServerPublicKey, this.state.aesKey);
+
+            console.log("AesKey Encrypted with public key" + rsaEncryptedAesKey);
+            resolve({ rsaEncryptedAesKey, iv: this.state.iv, encrypted });
+        } else {
+            Api.getPublicKey()
+                .then((res) => {
+                    const publicKey = res.data;
+
+
+                    this.setState({rsaPublicKey: publicKey});
+                    let rsaEncrypt = new JSEncrypt();
+                    rsaEncrypt.setPublicKey(this.state.rsaPublicKey);
+                    let rsaEncryptedAesKey = rsaEncrypt.encrypt(this.state.aesKey.toString());
+                    const encrypted = crypt.encrypt(publicKey, this.state.aesKey);
+
+                    console.log("AesKey Encrypted with public key" + rsaEncryptedAesKey);
+                    resolve({ rsaEncryptedAesKey, iv: this.state.iv, encrypted });
+                })
+                .catch((error) => {
+                    console.log(error);
+                    reject(error);
+                });
+        }
+
     })
   }
 
@@ -81,12 +92,16 @@ export class App extends Component {
   }
 
   decrypt = (data,iv) => {
-      console.log("SJAJDJSADS          "+data);
-      console.log("AAAAAAAAAA          "+this.state.aesKey);
-      console.log("BBBBBBBBBB          "+this.state.iv);
-      let aesDecTrans = CryptoJS.AES.decrypt(data, this.state.aesKey,{iv: "6162636465666768696a6b6c6d6e6f7",mode: CryptoJS.mode.CBC,padding: CryptoJS.pad.Pkcs7});
-      console.log("YYYYYYYYYYYY  "+aesDecTrans);
-      return JSON.parse(aesDecTrans.toString(CryptoJS.enc.Utf8));
+      console.log("dado criptografado          "+data);
+      //console.log("AAAAAAAAAA          "+this.state.aesKey);
+      //console.log("BBBBBBBBBB          "+this.state.iv);
+      let aesDecTrans2 = aes.decrypt(data,this.state.aesKey.toString());
+      //let aesDecTrans = CryptoJS.AES.decrypt(data,this.state.aesKey,{iv: this.state.iv ,mode: CryptoJS.mode.CBC,padding: CryptoJS.pad.Pkcs7});
+      //console.log("YYYYYYYYYYYY  "+aesDecTrans2);
+      //console.log(CryptoJS.enc.Utf8);
+      let stringaes = aesDecTrans2.toString(CryptoJS.enc.Utf8);
+      //console.log(JSON.parse(stringaes));
+      return JSON.parse(stringaes);
   }
 
   encrypt = (data) => {

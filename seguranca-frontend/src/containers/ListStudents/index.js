@@ -25,8 +25,8 @@ const ListStudents = ({ getKey, decrypt }) => {
         getKey()
         .then(({ rsaEncryptedAesKey, iv, encrypted}) => {   
             Api.getStudents(rsaEncryptedAesKey, iv, encrypted).then( res => {
-                console.log(JSON.stringify(res));
-                const result = decrypt(res.data,res.config.headers.iv)
+                const result = decrypt(res.data,res.config.headers.iv);
+                console.log(result);
                 setStudents(result)
             })
         })

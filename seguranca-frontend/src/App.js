@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router } from "react-router-dom"
 import BodyApp from './components/body';
+import { Crypt, RSA } from 'hybrid-crypto-js'; 
 import CryptoJS from 'crypto-js';
 import JSEncrypt from 'jsencrypt';
 import Api from '../src/services/Api';
@@ -20,6 +21,7 @@ export class App extends Component {
   };
 
   getKey = () => {
+    const crypt = new Crypt();
     return new Promise((resolve, reject) => {
       Api.getPublicKey()
         .then((res) => {
@@ -33,13 +35,17 @@ export class App extends Component {
           let aesKey = CryptoJS.PBKDF2(secretPhrase.toString(), salt, {
             keySize: 128 / 32
           });
-
+          console.log("AESKEY" + aesKey);
           this.setState({aesKey: aesKey, rsaPublicKey: publicKey, iv: iv});
 
           let rsaEncrypt = new JSEncrypt();
           rsaEncrypt.setPublicKey(this.state.rsaPublicKey);
           let rsaEncryptedAesKey = rsaEncrypt.encrypt(aesKey.toString());
-          resolve({ rsaEncryptedAesKey, iv });
+
+          const encrypted = crypt.encrypt(publicKey, aesKey)
+
+          console.log("AesKey Encrypted with public key" + rsaEncryptedAesKey)
+          resolve({ rsaEncryptedAesKey, iv, encrypted });
         })
         .catch((error) => {
           console.log(error);

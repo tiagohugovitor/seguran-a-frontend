@@ -3,10 +3,14 @@ import axios from 'axios'
 const url = 'http://localhost:8080'
 
 const Services = {
-    getStudents: (rsaEncryptedAesKey, iv) =>
+    getStudents: (rsaEncryptedAesKey, iv, encrypted) =>
         axios.get(
             `${url}/students`, {
-                'headers': { rsaEncryptedAesKey: rsaEncryptedAesKey, iv: iv}
+                'headers': {
+                    encrypted: encrypted, 
+                    rsaEncryptedAesKey: rsaEncryptedAesKey,
+                    iv: iv
+                }
             }
         ),
     addStudent: (data) =>
@@ -18,7 +22,9 @@ const Services = {
             `${url}/student/`, data
         ),
     getPublicKey: () =>
-        axios.get(`${url}/getPublicKey`)
+        axios.get(
+            `${url}/getPublicKey`
+        )
 }
 
 export default Services

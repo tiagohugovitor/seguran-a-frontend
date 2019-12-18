@@ -11,7 +11,6 @@ import TableRow from '@material-ui/core/TableRow'
 import Paper from '@material-ui/core/Paper'
 import UpdateStudent from '../UpdateStudent'
 import { Content, Title, FlexBox } from './styled'
-import { aesDecryptTest } from '../../services/cryptography'
 import Api from '../../services/Api'
 
 const ListStudents = ({ getKey, decrypt }) => {
@@ -24,8 +23,8 @@ const ListStudents = ({ getKey, decrypt }) => {
 
     const getStudents = () => {
         getKey()
-        .then(({ rsaEncryptedAesKey, iv}) => {   
-            Api.getStudents(rsaEncryptedAesKey, iv).then( res => {
+        .then(({ rsaEncryptedAesKey, iv, encrypted}) => {   
+            Api.getStudents(rsaEncryptedAesKey, iv, encrypted).then( res => {
                 const result = decrypt(res)
                 setStudents(result)
             })
